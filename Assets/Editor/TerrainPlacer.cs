@@ -1,84 +1,157 @@
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
+
+enum TerrainPlacerError {
+	TERRAIN_OBJECT_NOT_SELECTED,
+	TERRAIN_OBJECT_IS_PERSISTENT,
+	TERRAIN_OBJECT_NOT_CONTAINS_TERRAIN,
+	OBJECTS_NOT_SELECTED
+}
 
 public class TerrainPlacer : EditorWindow {
-	string terrain_name = "terrain";
+	GameObject terrain_object;
 	float vertical_shift = 0.0f;
 	Vector3 rotate_limits = Vector3.zero;
-	Terrain terrain = null;
-	UnityEngine.Object[] selected_stones = new UnityEngine.Object[0];
+
+	Terrain terrain;
+	Object[] selected_objects = new Object[0];
+
+	List<TerrainPlacerError> errors = new List<TerrainPlacerError>();
+
 	System.Random random_number_generator = new System.Random();
 
 	[MenuItem("Window/Terrain Placer")]
 	static void Init() {
-		TerrainPlacer.GetWindow(typeof(TerrainPlacer));
+		EditorWindow window = TerrainPlacer.GetWindow(typeof(TerrainPlacer));
+		window.title = "Terrain Placer";
+		window.Show();
 	}
 
 	void Update() {
-		GameObject terrain = GameObject.Find(terrain_name);
-		this.terrain =
-			terrain != null
-				? terrain.GetComponent<Terrain>()
-				: null;
+		errors.Clear();
+		updateTerrain();
+		updateSelectedObjects();
+	}
 
-		selected_stones = Selection.GetFiltered(
+	void updateTerrain() {
+		if (terrain_object == null) {
+			errors.Add(TerrainPlacerError.TERRAIN_OBJECT_NOT_SELECTED);
+		} else if (EditorUtility.IsPersistent(terrain_object)) {
+			errors.Add(TerrainPlacerError.TERRAIN_OBJECT_IS_PERSISTENT);
+		} else {
+			terrain = terrain_object.GetComponent<Terrain>();
+			if (terrain == null) {
+				errors.Add(TerrainPlacerError.TERRAIN_OBJECT_NOT_CONTAINS_TERRAIN);
+			}
+		}
+	}
+
+	void updateSelectedObjects() {
+		selected_objects = Selection.GetFiltered(
 			typeof(GameObject),
 			SelectionMode.TopLevel
 				| SelectionMode.ExcludePrefab
 				| SelectionMode.Editable
 		);
+		if (selected_objects.Length == 0) {
+			errors.Add(TerrainPlacerError.OBJECTS_NOT_SELECTED);
+		}
 	}
 
 	void OnGUI() {
-		if (terrain == null) {
-			EditorGUILayout.HelpBox(
-				"Terrain not found!", MessageType.Error
-			);
-		}
-		if (selected_stones.Length == 0) {
-			EditorGUILayout.HelpBox(
-				"Objects for placing not selected!", MessageType.Warning
-			);
-		}
-		GUILayout.Label(
-			string.Format(
-				"Selected objects: {0}.", selected_stones.Length
-			),
-			EditorStyles.boldLabel
-		);
+		outputErrorMessages();
+		outputUtilInfo();
+		outputParametersFields();
+		outputProcessButton();
+	}
 
-		terrain_name = EditorGUILayout.TextField("Terrain name:", terrain_name);
+	void outputErrorMessages() {
+		if (errors.Contains(TerrainPlacerError.TERRAIN_OBJECT_NOT_SELECTED)) {
+			EditorGUILayout.HelpBox(
+				"Terrain object not selected.", MessageType.Error
+			);
+		}
+		if (errors.Contains(TerrainPlacerError.TERRAIN_OBJECT_IS_PERSISTENT)) {
+			EditorGUILayout.HelpBox(
+				"Terrain object is persistent. Selects its from scene.", MessageType.Error
+			);
+		}
+		if (errors.Contains(TerrainPlacerError.TERRAIN_OBJECT_NOT_CONTAINS_TERRAIN)) {
+			EditorGUILayout.HelpBox(
+				"Terrain object not contains terrain.", MessageType.Error
+			);
+		}
+		if (errors.Contains(TerrainPlacerError.OBJECTS_NOT_SELECTED)) {
+			EditorGUILayout.HelpBox(
+				"Objects for placing not selected.", MessageType.Warning
+			);
+		}
+		if (errors.Count > 0) {
+			EditorGUILayout.Space();
+		}
+	}
+
+	void outputUtilInfo() {
+		EditorGUILayout.LabelField(
+			"Selected objects:",
+			selected_objects.Length.ToString()
+		);
+		EditorGUILayout.Space();
+	}
+
+	void outputParametersFields() {
+		terrain_object = (GameObject)EditorGUILayout.ObjectField(
+			"Terrain object:",
+			terrain_object,
+			typeof(GameObject),
+			true
+		);
 		vertical_shift = EditorGUILayout.FloatField("Vertical shift:", vertical_shift);
 		rotate_limits = EditorGUILayout.Vector3Field("Rotate limits:", rotate_limits);
+		EditorGUILayout.Space();
+	}
 
-		GUI.enabled = terrain != null && selected_stones.Length > 0;
+	void outputProcessButton() {
+		GUI.enabled = errors.Count == 0;
 		bool pressed = GUILayout.Button("Process");
 		if (pressed) {
-			process();
+			processObjects();
 		}
 		GUI.enabled = true;
 	}
 
-	void process() {
-		foreach(UnityEngine.Object stone in selected_stones) {
-			GameObject game_object = (GameObject)stone;
-			Undo.RecordObject(game_object.transform, "Place object on terrain");
-
-			Vector3 game_object_position = game_object.transform.position;
-			game_object_position.y = terrain.SampleHeight(game_object_position) + vertical_shift;
-			game_object.transform.position = game_object_position;
-
-			game_object.transform.Rotate(
-				new Vector3(
-					getRandomNumber(rotate_limits.x),
-					getRandomNumber(rotate_limits.y),
-					getRandomNumber(rotate_limits.z)
-				)
-			);
+	void processObjects() {
+		foreach(Object selected_object in selected_objects) {
+			saveObjectState((GameObject)selected_object);
+			changeObjectPosition((GameObject)selected_object);
+			changeObjectRotation((GameObject)selected_object);
 		}
 	}
 
-	float getRandomNumber(float base_value) {
-		return (float)random_number_generator.NextDouble() * 2 * base_value - base_value;
+	void saveObjectState(GameObject game_object) {
+		Undo.RecordObject(game_object.transform, "Place object on terrain");
+	}
+
+	void changeObjectPosition(GameObject game_object) {
+		game_object.transform.position = new Vector3(
+			game_object.transform.position.x,
+			terrain.SampleHeight(game_object.transform.position) + vertical_shift,
+			game_object.transform.position.z
+		);
+	}
+
+	void changeObjectRotation(GameObject game_object) {
+		game_object.transform.Rotate(
+			new Vector3(
+				getRandomAngle(rotate_limits.x),
+				getRandomAngle(rotate_limits.y),
+				getRandomAngle(rotate_limits.z)
+			)
+		);
+	}
+
+	float getRandomAngle(float limit) {
+		return (float)random_number_generator.NextDouble() * 2 * limit - limit;
 	}
 }
