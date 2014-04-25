@@ -5,3 +5,4 @@
 * graveyard pack - doakey3, [http://www.blendswap.com/blends/view/68398](http://www.blendswap.com/blends/view/68398);
 * chapel - ahedov, [http://www.blendswap.com/blends/view/69364](http://www.blendswap.com/blends/view/69364);
 * crossbow - LiNk2.0, [http://www.blendswap.com/blends/view/45705](http://www.blendswap.com/blends/view/45705);
+* skull - Vecryz, [http://www.blendswap.com/blends/view/70712](http://www.blendswap.com/blends/view/70712);
