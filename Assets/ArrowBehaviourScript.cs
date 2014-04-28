@@ -17,6 +17,9 @@ public class ArrowBehaviourScript : MonoBehaviour {
 	}
 
 	void OnCollisionEnter(Collision collision) {
+		if (collision.gameObject.tag == "skull") {
+			Destroy(collision.gameObject);
+		}
 		Destroy(gameObject);
 	}
 }
