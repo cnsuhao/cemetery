@@ -3,6 +3,7 @@ using UnityEngine;
 public class GlobalScript : MonoBehaviour {
 	public GameObject skull;
 	public float skull_creating_delay_in_ms = 1000.0f;
+	public Vector2 position_limits = new Vector2(25.0f, 25.0f);
 
 	System.DateTime last_timestamp;
 	System.Random random_number_generator = new System.Random();
@@ -25,9 +26,9 @@ public class GlobalScript : MonoBehaviour {
 		) {
 			GameObject new_sull = (GameObject)Instantiate(skull);
 			new_sull.transform.position =  new Vector3(
-				getRandomPosition(25),
-				2.5f,
-				getRandomPosition(25)
+				getRandomPosition(position_limits.x),
+				0.0f,
+				getRandomPosition(position_limits.y)
 			);
 
 			last_timestamp = current_timestamp;
