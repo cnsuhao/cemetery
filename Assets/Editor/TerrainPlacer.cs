@@ -1,3 +1,26 @@
+/* The MIT License (MIT)
+ *
+ * Copyright (c) 2014 thewizardplusplus <thewizardplusplus@yandex.ru>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
@@ -23,40 +46,19 @@ public class TerrainPlacer : EditorWindow {
 
 	[MenuItem("Window/Terrain Placer")]
 	static void Init() {
-		EditorWindow window = TerrainPlacer.GetWindow(typeof(TerrainPlacer));
-		window.title = "Terrain Placer";
-		window.Show();
+		TerrainPlacer window = TerrainPlacer.GetWindow<TerrainPlacer>(
+			"Terrain Placer",
+			true
+		);
+		window.updateSelectedObjects();
 	}
 
 	void Update() {
-		errors.Clear();
 		updateTerrain();
+	}
+
+	void OnSelectionChange() {
 		updateSelectedObjects();
-	}
-
-	void updateTerrain() {
-		if (terrain_object == null) {
-			errors.Add(TerrainPlacerError.TERRAIN_OBJECT_NOT_SELECTED);
-		} else if (EditorUtility.IsPersistent(terrain_object)) {
-			errors.Add(TerrainPlacerError.TERRAIN_OBJECT_IS_PERSISTENT);
-		} else {
-			terrain = terrain_object.GetComponent<Terrain>();
-			if (terrain == null) {
-				errors.Add(TerrainPlacerError.TERRAIN_OBJECT_NOT_CONTAINS_TERRAIN);
-			}
-		}
-	}
-
-	void updateSelectedObjects() {
-		selected_objects = Selection.GetFiltered(
-			typeof(GameObject),
-			SelectionMode.TopLevel
-				| SelectionMode.ExcludePrefab
-				| SelectionMode.Editable
-		);
-		if (selected_objects.Length == 0) {
-			errors.Add(TerrainPlacerError.OBJECTS_NOT_SELECTED);
-		}
 	}
 
 	void OnGUI() {
@@ -66,25 +68,68 @@ public class TerrainPlacer : EditorWindow {
 		outputProcessButton();
 	}
 
+	void updateSelectedObjects() {
+		errors.Remove(TerrainPlacerError.OBJECTS_NOT_SELECTED);
+
+		selected_objects = Selection.GetFiltered(
+			typeof(GameObject),
+			SelectionMode.TopLevel
+				| SelectionMode.ExcludePrefab
+				| SelectionMode.Editable
+		);
+		if (selected_objects.Length == 0) {
+			errors.Add(TerrainPlacerError.OBJECTS_NOT_SELECTED);
+		}
+
+		Repaint();
+	}
+
+	void updateTerrain() {
+		errors.Remove(TerrainPlacerError.TERRAIN_OBJECT_NOT_SELECTED);
+		errors.Remove(TerrainPlacerError.TERRAIN_OBJECT_IS_PERSISTENT);
+		errors.Remove(TerrainPlacerError.TERRAIN_OBJECT_NOT_CONTAINS_TERRAIN);
+
+		if (terrain_object == null) {
+			errors.Add(TerrainPlacerError.TERRAIN_OBJECT_NOT_SELECTED);
+		} else if (EditorUtility.IsPersistent(terrain_object)) {
+			errors.Add(TerrainPlacerError.TERRAIN_OBJECT_IS_PERSISTENT);
+		} else {
+			terrain = terrain_object.GetComponent<Terrain>();
+			if (terrain == null) {
+				errors.Add(
+					TerrainPlacerError.TERRAIN_OBJECT_NOT_CONTAINS_TERRAIN
+				);
+			}
+		}
+	}
+
 	void outputErrorMessages() {
 		if (errors.Contains(TerrainPlacerError.TERRAIN_OBJECT_NOT_SELECTED)) {
 			EditorGUILayout.HelpBox(
-				"Terrain object not selected.", MessageType.Error
+				"Terrain object not selected.",
+				MessageType.Error
 			);
 		}
 		if (errors.Contains(TerrainPlacerError.TERRAIN_OBJECT_IS_PERSISTENT)) {
 			EditorGUILayout.HelpBox(
-				"Terrain object is persistent. Selects its from scene.", MessageType.Error
+				"Terrain object is persistent. Selects its from scene.",
+				MessageType.Error
 			);
 		}
-		if (errors.Contains(TerrainPlacerError.TERRAIN_OBJECT_NOT_CONTAINS_TERRAIN)) {
+		if (
+			errors.Contains(
+				TerrainPlacerError.TERRAIN_OBJECT_NOT_CONTAINS_TERRAIN
+			)
+		) {
 			EditorGUILayout.HelpBox(
-				"Terrain object not contains terrain.", MessageType.Error
+				"Terrain object not contains terrain.",
+				MessageType.Error
 			);
 		}
 		if (errors.Contains(TerrainPlacerError.OBJECTS_NOT_SELECTED)) {
 			EditorGUILayout.HelpBox(
-				"Objects for placing not selected.", MessageType.Warning
+				"Objects for placing not selected.",
+				MessageType.Warning
 			);
 		}
 		if (errors.Count > 0) {
@@ -95,7 +140,8 @@ public class TerrainPlacer : EditorWindow {
 	void outputUtilInfo() {
 		EditorGUILayout.LabelField(
 			"Selected objects:",
-			selected_objects.Length.ToString()
+			selected_objects.Length.ToString(),
+			EditorStyles.boldLabel
 		);
 		EditorGUILayout.Space();
 	}
@@ -107,8 +153,14 @@ public class TerrainPlacer : EditorWindow {
 			typeof(GameObject),
 			true
 		);
-		vertical_shift = EditorGUILayout.FloatField("Vertical shift:", vertical_shift);
-		rotate_limits = EditorGUILayout.Vector3Field("Rotate limits:", rotate_limits);
+		vertical_shift = EditorGUILayout.FloatField(
+			"Vertical shift:",
+			vertical_shift
+		);
+		rotate_limits = EditorGUILayout.Vector3Field(
+			"Rotate limits:",
+			rotate_limits
+		);
 		EditorGUILayout.Space();
 	}
 
@@ -122,7 +174,7 @@ public class TerrainPlacer : EditorWindow {
 	}
 
 	void processObjects() {
-		foreach(Object selected_object in selected_objects) {
+		foreach (Object selected_object in selected_objects) {
 			saveObjectState((GameObject)selected_object);
 			changeObjectPosition((GameObject)selected_object);
 			changeObjectRotation((GameObject)selected_object);
@@ -136,7 +188,8 @@ public class TerrainPlacer : EditorWindow {
 	void changeObjectPosition(GameObject game_object) {
 		game_object.transform.position = new Vector3(
 			game_object.transform.position.x,
-			terrain.SampleHeight(game_object.transform.position) + vertical_shift,
+			terrain.SampleHeight(game_object.transform.position)
+				+ vertical_shift,
 			game_object.transform.position.z
 		);
 	}
