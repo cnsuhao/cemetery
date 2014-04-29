@@ -15,8 +15,11 @@ public class GlobalScript : MonoBehaviour {
 
 	void Update() {
 		if (Input.GetKeyDown(KeyCode.Escape)) {
-			UnityEditor.EditorApplication.isPlaying = false;
-			Application.Quit();
+			#if !UNITY_WEBPLAYER
+				Application.Quit();
+			#elif UNITY_EDITOR
+				UnityEditor.EditorApplication.isPlaying = false;
+			#endif
 		}
 
 		System.DateTime current_timestamp = System.DateTime.Now;

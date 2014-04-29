@@ -31,3 +31,6 @@ Thumbs.db
 *.blend1
 *.blend2
 *.blend3
+
+# Custom files
+/build/
