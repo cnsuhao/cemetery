@@ -2,6 +2,14 @@
 
 public class ArrowBehaviourScript : MonoBehaviour {
 	public float free_distance = 1.0f;
+	public string player_object_name = "player";
+
+	PlayerBehaviourScript player_script;
+
+	void Start() {
+		GameObject player = GameObject.Find(player_object_name);
+		player_script = player.GetComponent<PlayerBehaviourScript>();
+	}
 
 	void Update() {
 		if (
@@ -19,6 +27,9 @@ public class ArrowBehaviourScript : MonoBehaviour {
 	void OnCollisionEnter(Collision collision) {
 		if (collision.gameObject.tag == "skull") {
 			Destroy(collision.gameObject);
+			if (player_script != null) {
+				player_script.IncreaseSkulls();
+			}
 		}
 		Destroy(gameObject);
 	}

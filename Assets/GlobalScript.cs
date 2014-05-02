@@ -4,17 +4,24 @@ public class GlobalScript : MonoBehaviour {
 	public GameObject skull;
 	public float skull_creating_delay_in_ms = 1000.0f;
 	public Vector2 position_limits = new Vector2(25.0f, 25.0f);
+	public string player_object_name = "player";
 
 	System.DateTime last_timestamp;
+	PlayerBehaviourScript player_script;
 	System.Random random_number_generator = new System.Random();
 
 	void Start() {
 		last_timestamp = System.DateTime.Now;
+
+		GameObject player = GameObject.Find(player_object_name);
+		player_script = player.GetComponent<PlayerBehaviourScript>();
+
 		Screen.showCursor = false;
 	}
 
 	void Update() {
 		if (Input.GetKeyDown(KeyCode.Escape)) {
+			player_script.SaveResults();
 			Application.LoadLevel("menu_scene");
 		}
 
