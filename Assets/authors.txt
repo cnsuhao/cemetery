@@ -1,3 +1,30 @@
-<b>Authors</b>
+<b>Кладбище, версия 1.0</b>
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Игра сделана для конкурса Horror Games Contest от L на форуме GameDev.ru.
+
+<b>Текстуры</b>
+
+	* текстура земли - Jacobo Cortés Ferreira;
+	* текстура травы - CGTextures;
+	* текстура черепа - CGTextures;
+	* иконка черепа - narrowhouse;
+	* иконка сердца - johnny_automatic.
+
+<b>3D модели</b>
+
+	* набор моделей для кладбища - doakey3;
+	* модель часовни - ahedov;
+	* модель арбалета - LiNk2.0;
+	* модель черепа - Vecryz.
+
+<b>Звуки</b>
+
+	* шаги - sunboy;
+	* прыжок (начало и конец) - mallement;
+	* полёт стрелы (начало) - Robinhood76;
+	* полёт стрелы (конец) - cmusounddesign;
+	* стрёкот кузнечиков - lauris3722;
+	* крик боли - 11linda;
+	* крик смерти - 11linda.
+
+Всё остальное сделано thewizardplusplus.
