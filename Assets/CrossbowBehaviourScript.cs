@@ -7,10 +7,13 @@ public class CrossbowBehaviourScript : MonoBehaviour {
 
 	Transform arrow_origin;
 	System.DateTime last_timestamp;
+	GameObject arrow_fly_start_source;
 
 	void Start() {
 		arrow_origin = transform.Find("arrow_origin");
 		last_timestamp = System.DateTime.Now;
+
+		arrow_fly_start_source = GameObject.Find("arrow_fly_start_source");
 	}
 
 	void Update () {
@@ -26,6 +29,10 @@ public class CrossbowBehaviourScript : MonoBehaviour {
 			arrow_clone.GetComponent<Rigidbody>().velocity = speed * arrow_origin.up;
 
 			last_timestamp = current_timestamp;
+
+			if (arrow_fly_start_source != null && arrow_fly_start_source.audio != null) {
+				arrow_fly_start_source.audio.Play();
+			}
 		}
 	}
 }

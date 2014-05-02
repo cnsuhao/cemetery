@@ -3,6 +3,7 @@
 public class ArrowBehaviourScript : MonoBehaviour {
 	public float free_distance = 1.0f;
 	public string player_object_name = "player";
+	public GameObject arrow_fly_end_source;
 
 	PlayerBehaviourScript player_script;
 
@@ -25,6 +26,15 @@ public class ArrowBehaviourScript : MonoBehaviour {
 	}
 
 	void OnCollisionEnter(Collision collision) {
+		if (this.arrow_fly_end_source != null) {
+			GameObject arrow_fly_end_source = (GameObject)Instantiate(
+				this.arrow_fly_end_source,
+				transform.position,
+				transform.rotation
+			);
+			arrow_fly_end_source.audio.Play();
+		}
+
 		if (collision.gameObject.tag == "skull") {
 			Destroy(collision.gameObject);
 			if (player_script != null) {
